@@ -85,7 +85,7 @@ function Contenido() {
         </div><ListaClases clases={filtradas} cupos={cupos} /></section>} />
         <Route path="/catalogo/:id" element={<Detalle clases={clases} cupos={cupos} />} />
         <Route path="/mis-matriculas" element={<Protegida><section><h1>Mis matrículas</h1>{propias.length ? <div className="list-group">{propias.map(m => { const clase = clases.find(c => String(c.id) === String(m.claseId)); return <div className="list-group-item" key={m.id}><strong>{m.codigo}</strong> · {clase?.nombre || 'Clase eliminada'} · <BadgeEstado estado={m.estado} /></div>; })}</div> : <p>Aún no tienes matrículas.</p>}</section></Protegida>} />
-        <Route path="/nueva-matricula" element={<Protegida><section><h1>Nueva matrícula</h1><FormularioMatricula key={ubicacion.search} clases={clases} matriculas={matriculas} usuario={usuario} claseInicial={new URLSearchParams(ubicacion.search).get('claseId')} onGuardar={guardar} /></section></Protegida>} />
+        <Route path="/nueva-matricula" element={<Protegida><section><h1>Nueva matrícula</h1><FormularioMatricula key={ubicacion.search} clases={clases} matriculas={matriculas} usuario={usuario} claseInicial={new URLSearchParams(ubicacion.search).get('claseId')} onIntento={() => setMensaje('')} onGuardar={guardar} /></section></Protegida>} />
         <Route path="/login" element={usuario ? <Navigate to="/mis-matriculas" replace /> : <Login />} />
         <Route path="*" element={<section><h1>404</h1><p>Página no encontrada.</p><Link to="/">Ir al inicio</Link></section>} />
       </Routes>
