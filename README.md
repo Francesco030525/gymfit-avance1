@@ -10,7 +10,6 @@ Sistema 6 del proyecto integral: **clases** como catálogo y **matrículas** com
 - Isabel Cruz Campos
 - Dominick Joshiro Ramirez Calixto 
 
-El documento del curso indica grupos de 3 a 4; la lista recibida contiene 5 integrantes. El grupo debe aclarar esta situación con el docente.
 
 ## Avances incluidos
 
