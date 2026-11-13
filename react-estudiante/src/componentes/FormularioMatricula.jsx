@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { validarCodigo } from '../core/validadores.js';
 import { Clase, Matricula } from '../core/modelos.js';
 
-export default function FormularioMatricula({ clases, matriculas, usuario, claseInicial, onGuardar }) {
+export default function FormularioMatricula({ clases, matriculas, usuario, claseInicial, onIntento, onGuardar }) {
   const [claseId, setClaseId] = useState(claseInicial || '');
   const [codigo, setCodigo] = useState(usuario.codigo);
   const [errores, setErrores] = useState({});
   const primerCampo = useRef(null);
-  const formulario = useRef(null);
   useEffect(() => { primerCampo.current?.focus(); }, []);
   function enviar(evento) {
     evento.preventDefault();
+    onIntento();
     const nuevos = {};
     try { validarCodigo(codigo); if (codigo !== usuario.codigo) nuevos.codigo = 'Usa tu propio código de estudiante.'; }
     catch (error) { nuevos.codigo = error.message; }
@@ -23,12 +23,11 @@ export default function FormularioMatricula({ clases, matriculas, usuario, clase
     setErrores(nuevos);
     if (Object.keys(nuevos).length) return;
     onGuardar({ claseId, usuarioId: usuario.id });
-    formulario.current?.reset();
     setClaseId('');
-    setCodigo(usuario.codigo);
+    setCodigo('');
     primerCampo.current?.focus();
   }
-  return <form ref={formulario} onSubmit={enviar} noValidate className="card card-body shadow-sm">
+  return <form onSubmit={enviar} noValidate className="card card-body shadow-sm">
     <label className="form-label" htmlFor="codigo">Código de estudiante</label>
     <input ref={primerCampo} id="codigo" className="form-control" value={codigo} onChange={e => setCodigo(e.target.value)} />
     {errores.codigo && <small className="text-danger">{errores.codigo}</small>}
