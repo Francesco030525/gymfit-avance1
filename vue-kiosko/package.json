@@ -1,0 +1,16 @@
+{
+  "name": "gymfit-vue-kiosko",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "sync-core": "node scripts/sync-core.cjs",
+    "predev": "npm run sync-core",
+    "dev": "vite --host 0.0.0.0 --port 5174",
+    "prebuild": "npm run sync-core",
+    "build": "vite build",
+    "preview": "vite preview --port 5174"
+  },
+  "dependencies": { "vue": "3.5.46" },
+  "devDependencies": { "@vitejs/plugin-vue": "6.0.11", "vite": "8.4.0" }
+}
