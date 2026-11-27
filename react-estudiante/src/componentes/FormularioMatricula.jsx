@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { validarCodigo } from '../core/validadores.js';
 import { Clase, Matricula } from '../core/modelos.js';
 
-export default function FormularioMatricula({ clases, matriculas, usuario, claseInicial, onIntento, onGuardar }) {
+export default function FormularioMatricula({ clases, matriculas, usuario, claseInicial, cargando, onIntento, onGuardar }) {
   const [claseId, setClaseId] = useState(claseInicial || '');
   const [codigo, setCodigo] = useState(usuario.codigo);
   const [errores, setErrores] = useState({});
+  const [enviando, setEnviando] = useState(false);
   const primerCampo = useRef(null);
   useEffect(() => { primerCampo.current?.focus(); }, []);
-  function enviar(evento) {
+  async function enviar(evento) {
     evento.preventDefault();
     onIntento();
     const nuevos = {};
@@ -16,16 +17,24 @@ export default function FormularioMatricula({ clases, matriculas, usuario, clase
     catch (error) { nuevos.codigo = error.message; }
     const datosClase = clases.find(c => String(c.id) === claseId);
     if (!datosClase) nuevos.claseId = 'Selecciona una clase.';
-    if (datosClase) {
+    if (datosClase && !Array.isArray(matriculas)) nuevos.claseId = 'Espera a que se cargue la ocupación de las clases.';
+    if (datosClase && Array.isArray(matriculas)) {
       try { new Matricula({ claseId, usuarioId: usuario.id }).validarCupo(new Clase(datosClase), matriculas); }
       catch (error) { nuevos.claseId = error.message; }
     }
     setErrores(nuevos);
     if (Object.keys(nuevos).length) return;
-    onGuardar({ claseId, usuarioId: usuario.id });
-    setClaseId('');
-    setCodigo('');
-    primerCampo.current?.focus();
+    setEnviando(true);
+    try {
+      await onGuardar({ claseId, usuarioId: usuario.id });
+      setClaseId('');
+      setCodigo('');
+      primerCampo.current?.focus();
+    } catch (error) {
+      setErrores({ claseId: error.message });
+    } finally {
+      setEnviando(false);
+    }
   }
   return <form onSubmit={enviar} noValidate className="card card-body shadow-sm">
     <label className="form-label" htmlFor="codigo">Código de estudiante</label>
@@ -37,6 +46,6 @@ export default function FormularioMatricula({ clases, matriculas, usuario, clase
       {clases.map(c => <option key={c.id} value={c.id}>{c.nombre} · {c.fecha} {c.horaInicio}</option>)}
     </select>
     {errores.claseId && <small className="text-danger">{errores.claseId}</small>}
-    <button className="btn btn-primary mt-3" type="submit">Guardar matrícula</button>
+    <button className="btn btn-primary mt-3" type="submit" disabled={cargando || enviando}>{enviando ? 'Guardando...' : 'Guardar matrícula'}</button>
   </form>;
 }

@@ -11,5 +11,8 @@ export class GymfitService {
   actualizar(id: string, clase: Omit<Clase, 'id'>) { return this.http.put<Clase>(`${this.base}/clases/${id}`, { ...clase, id }); }
   eliminar(id: string) { return this.http.delete<void>(`${this.base}/clases/${id}`); }
   matriculas() { return this.http.get<Matricula[]>(`${this.base}/matriculas`); }
+  cambiarEstadoMatricula(id: string, estado: Matricula['estado']) {
+    return this.http.patch<Matricula>(`${this.base}/matriculas/${id}`, { estado });
+  }
   usuarios() { return this.http.get<Usuario[]>(`${this.base}/usuarios`); }
 }
