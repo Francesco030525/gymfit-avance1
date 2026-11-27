@@ -12,6 +12,8 @@
     "preview": "vite preview --port 5173"
   },
   "dependencies": {
+    "alova": "3.5.5",
+    "axios": "1.21.1",
     "bootstrap": "^5.3.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

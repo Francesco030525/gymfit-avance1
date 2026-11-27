@@ -3,6 +3,7 @@
 **/.angular/
 **/.npm-cache/
 **/.vite/
+**/.next/
 **/.cache/
 **/coverage/
 *.log

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validarCorreo, validarCodigo, validarHora, validarFecha, validarCapacidad } from './validadores.js';
 import { Usuario, Clase, Matricula } from './modelos.js';
-import { contarMatriculasPorEstado, calcularOcupacionPorClase, obtenerSedesUnicas, obtenerRankingClases, crearGeneradorCodigoMatricula } from './estadisticas.js';
+import { contarMatriculasPorEstado, calcularOcupacionPorClase, obtenerSedesUnicas, obtenerRankingClases, crearGeneradorCodigoMatricula, construirGrillaDisponibilidad, HORAS_KIOSKO } from './estadisticas.js';
 
 const clase = new Clase({ id: '1', nombre: 'Spinning', sede: 'Lima Centro', capacidad: 2, fecha: '2026-11-20', horaInicio: '08:00', horaFin: '09:00' });
 const una = new Matricula({ id: '1', codigo: 'MAT-0001', claseId: '1', usuarioId: '3', estado: 'aprobada' });
@@ -20,3 +20,19 @@ test('Matricula bloquea duplicados', () => assert.throws(() => new Matricula({ c
 test('matrícula rechazada libera cupo', () => assert.equal(clase.cuposDisponibles([una, { ...dos, estado: 'rechazada' }]), 1));
 test('reduce, Map, Set y ranking', () => { const lista = [una, dos, { ...dos, id: '3', claseId: '2', estado: 'rechazada' }]; assert.deepEqual(contarMatriculasPorEstado(lista), { aprobada: 1, pendiente: 1, rechazada: 1 }); assert.equal(calcularOcupacionPorClase(lista).get('1'), 2); assert.deepEqual(obtenerSedesUnicas([clase, { ...clase }]), ['Lima Centro']); assert.equal(obtenerRankingClases(lista, [clase, { ...clase, id: '2' }])[0].id, '1'); });
 test('closure y padStart generan códigos consecutivos', () => { const siguiente = crearGeneradorCodigoMatricula(); assert.equal(siguiente(), 'MAT-0001'); assert.equal(siguiente(), 'MAT-0002'); });
+test('grilla de clase por hora distingue horas sin sesión y cupos pendientes', () => {
+  const grilla = construirGrillaDisponibilidad([clase], [una, { ...dos, estado: 'rechazada' }, { ...dos, id: '3' }], '2026-11-20');
+  assert.equal(HORAS_KIOSKO.length, 15);
+  assert.equal(grilla.length, 1);
+  assert.equal(grilla[0].celdas[1].estado, 'ocupada');
+  assert.equal(grilla[0].celdas[1].cupos, 0);
+  assert.equal(grilla[0].celdas[2].estado, 'sin-clase');
+});
+test('grilla no cuenta rechazadas y distingue pendiente de ocupada', () => {
+  const pendiente = construirGrillaDisponibilidad([{ ...clase, capacidad: 3 }], [una, dos], '2026-11-20')[0].celdas[1];
+  const libre = construirGrillaDisponibilidad([clase], [{ ...una, estado: 'rechazada' }], '2026-11-20')[0].celdas[1];
+  assert.equal(pendiente.estado, 'pendiente');
+  assert.equal(pendiente.cupos, 1);
+  assert.equal(libre.estado, 'libre');
+  assert.equal(libre.cupos, 2);
+});
